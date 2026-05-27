@@ -21,22 +21,32 @@ enum OrderStatus{
 model User {
   id             String         @id @default(uuid())
   firstName      String         
-  lastName       String
-  username       String         @unique
+  lastName       String?
   email          String         @unique
   password       String
   phoneNumber    String   
-  role           Role          @default(USER)
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt    
+  role           Role           @default(USER)
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt    
 
   addresses      Address[]
   product        Product[]
   order          Order[]
   cart           Cart[]
+  refreshTokens  RefreshToken[]
 
   @@index([email])
 }
+
+model RefreshToken {
+  id             String        @id @default(uuid())
+  userId         String        @unique
+  token          String
+  expiresAt      DateTime
+
+  user           User         @relation(fields: [userId], references: [id])
+}
+
 
 model Address {
   id             String        @id @default(uuid())

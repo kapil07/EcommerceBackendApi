@@ -1,3 +1,32 @@
-import express from 'express'
+import express, { NextFunction, Response } from "express";
+import cors from "cors";
+import cookiesParser from "cookie-parser";
+import { Request } from "express";
+import { globalErrorHandler } from "./middlewares/error.middleware.js";
 
 export const app = express();
+
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+
+app.use(
+  cors({
+    origin: "",
+    credentials: true,
+  }),
+);
+
+app.use(cookiesParser());
+
+app.get("/health-check", (req: Request, res: Response, next: NextFunction) => {
+  res.status(200).json({
+    success: true,
+    data: "Api is working fine",
+  });
+});
+
+import authRoutes from "./modules/auth/auth.route.js";
+
+app.use("/api/v1/auth", authRoutes);
+
+app.use(globalErrorHandler);
