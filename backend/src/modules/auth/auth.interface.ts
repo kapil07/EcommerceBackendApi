@@ -1,4 +1,4 @@
-import { Role, User } from "@prisma/client";
+import { RefreshToken, Role, User } from "@prisma/client";
 import { registerUserDTO } from "./auth.schema.js";
 
 export interface IAuthRepository {
@@ -9,6 +9,11 @@ export interface IAuthRepository {
     email: string;
     password: string;
     phoneNumber: string;
-    role: Role
+    role: Role;
   }): Promise<User>;
+  createRefreshToken(data: {
+    token: string;
+    userId: string;
+    expiresAt: Date;
+  }): Promise<RefreshToken>;
 }
