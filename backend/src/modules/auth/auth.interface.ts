@@ -1,5 +1,4 @@
 import { RefreshToken, Role, User } from "@prisma/client";
-import { registerUserDTO } from "./auth.schema.js";
 
 export interface IAuthRepository {
   getUserByEmail(email: string): Promise<User | null>;
@@ -16,4 +15,8 @@ export interface IAuthRepository {
     userId: string;
     expiresAt: Date;
   }): Promise<RefreshToken>;
+  getUserById(userId: string): Promise<User | null>;
+  findRefreshToken(hashedRefreshToken: string): Promise<RefreshToken | null>
+  deleteRefreshTokenById(refreshTokenById: string): Promise<void>
+  deleteAllRefreshTokenByUserId(userId: string): Promise<void>
 }

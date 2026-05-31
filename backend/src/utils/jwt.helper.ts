@@ -14,13 +14,13 @@ const REFRESH_TOKEN_EXPIRY =
   JWT_REFRESH_TOKEN_EXPIRY as SignOptions["expiresIn"];
 
 export const generateAccessToken = (user: IJwtPayload) => {
-  return jwt.sign({ user }, ACCESS_TOKEN_SECRET, {
+  return jwt.sign(user , ACCESS_TOKEN_SECRET, {
     expiresIn: ACCESS_TOKEN_EXPIRY,
   });
 };
 
 export const generateRefreshToken = (user: IJwtPayload) => {
-  return jwt.sign({ user }, REFRESH_TOKEN_SECRET, {
+  return jwt.sign(user , REFRESH_TOKEN_SECRET, {
     expiresIn: REFRESH_TOKEN_EXPIRY,
   });
 };

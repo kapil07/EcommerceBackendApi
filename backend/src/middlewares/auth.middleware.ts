@@ -28,6 +28,8 @@ export const verifyUser = async (
     };
 
     req.user = user;
+
+    next()
   } catch (error) {
     next(new AppError("Invalid or expired token", 401));
   }
