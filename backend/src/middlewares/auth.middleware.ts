@@ -34,3 +34,15 @@ export const verifyUser = async (
     next(new AppError("Invalid or expired token", 401));
   }
 };
+
+export const authorize = (...roles: string[]) => {
+  return (req: Request, res: Response, next: NextFunction) => {
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new AppError("You are not authorized", 403)
+      );
+    }
+
+    next();
+  };
+};
