@@ -10,4 +10,5 @@ export interface IProductRespository {
         price: any,
         stock: number
     }): Promise<Product>
+    getProductsByCategoryId(categoryId: string):Promise<Product[]> 
 }

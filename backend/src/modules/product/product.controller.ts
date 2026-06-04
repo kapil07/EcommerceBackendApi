@@ -20,3 +20,16 @@ export const createProductController = catchAsync(
     });
   },
 );
+
+export const getProductByCategoryIdController = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const categoryId = req.params.catId as string
+
+    const result = await productService.getProductsByCategoryId(categoryId);
+
+    sendResponse(res, 200, {
+      success: true,
+      message: "Products fetched successfully",
+      data: result
+    })
+  })

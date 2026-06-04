@@ -17,4 +17,14 @@ export class ProductRespository implements IProductRespository {
 
     return newProduct
   }
+
+  async getProductsByCategoryId(categoryId: string) {
+    const products = await prisma.product.findMany({
+      where:{
+        categoryId
+      }
+    })
+
+    return products
+  }
 }

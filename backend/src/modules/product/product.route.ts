@@ -1,6 +1,9 @@
 import express from "express";
 import { authorize, verifyUser } from "../../middlewares/auth.middleware.js";
-import { createProductController } from "./product.controller.js";
+import {
+  createProductController,
+  getProductByCategoryIdController,
+} from "./product.controller.js";
 import { validate } from "../../middlewares/validate.middleware.js";
 import { createProductSchema } from "./product.schema.js";
 import { upload } from "../../middlewares/multer.middleware.js";
@@ -16,5 +19,8 @@ router
     validate(createProductSchema),
     createProductController,
   );
+router
+  .route("/:catId")
+  .get(getProductByCategoryIdController);
 
 export default router;

@@ -14,3 +14,45 @@ export const createCategoryController = catchAsync(
     })
   },
 );
+
+export const allCategoryController = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await categoryService.getAllCategories();
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "All Categories fetched successfully",
+        data: result
+    })
+  },
+);
+
+export const updateCategoryController = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const categoryId = req.params.catId as string;
+
+    const result = await categoryService.updateCategory(req.body, categoryId)
+
+    sendResponse(res, 200, {
+      success: true,
+      message: "Category updated successfully",
+      data: result
+    })
+
+  })
+
+export const deleteCategoryController = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const categoryId = req.params.catId as string
+    await categoryService.deleteCategory(categoryId);
+
+    sendResponse(res, 200, {
+        success: true,
+        message: "Category deleted successfully",
+    })
+  },
+);
+
+
+
+
