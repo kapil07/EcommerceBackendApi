@@ -2,10 +2,14 @@ import express from "express";
 import { authorize, verifyUser } from "../../middlewares/auth.middleware.js";
 import {
   createProductController,
+  deleteProductController,
+  getAllProductsController,
   getProductByCategoryIdController,
+  toggleProductStatusController,
+  updateProductController,
 } from "./product.controller.js";
 import { validate } from "../../middlewares/validate.middleware.js";
-import { createProductSchema } from "./product.schema.js";
+import { createProductSchema, updateProductSchema } from "./product.schema.js";
 import { upload } from "../../middlewares/multer.middleware.js";
 
 const router = express.Router();
@@ -19,8 +23,21 @@ router
     validate(createProductSchema),
     createProductController,
   );
+router.route("/").get(verifyUser, authorize("ADMIN"), getAllProductsController);
+router.route("/:catId").get(getProductByCategoryIdController);
 router
-  .route("/:catId")
-  .get(getProductByCategoryIdController);
+  .route("/:prodId")
+  .patch(
+    verifyUser,
+    authorize("SELLER"),
+    validate(updateProductSchema),
+    updateProductController,
+  );
+router
+  .route("/:prodId")
+  .delete(verifyUser, authorize("SELLER"), deleteProductController);
+router
+  .route("/toggle/:prodId")
+  .patch(verifyUser, authorize("SELLER"), toggleProductStatusController);
 
 export default router;

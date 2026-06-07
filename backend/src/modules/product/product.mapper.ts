@@ -6,6 +6,7 @@ export const toProductResponse = (product:Product) => {
         productName: product.productName,
         productDesc: product.productDesc,
         productOImageUrls: product.productImageUrls,
+        isActive: product.isActive,
         price: product.price,
         stock: product.stock,
         createAt: product.createdAt,
