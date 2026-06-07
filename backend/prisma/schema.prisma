@@ -50,7 +50,8 @@ model RefreshToken {
 
 model Address {
   id             String        @id @default(uuid())
-  userId         String        
+  userId         String
+  addressType    String   
   addressLine1   String
   addressLine2   String?
   city           String
@@ -111,6 +112,7 @@ model Order {
 
   user              User         @relation(fields:[userId], references:[id], onDelete: Cascade)
   items             OrderItems[]
+  orderAddress      OrderAddress[]
 
   @@index([userId])
 }
@@ -128,6 +130,19 @@ model OrderItems {
 
   @@index([orderId])
   @@index([productId])
+}
+
+model OrderAddress{
+  id               String      @id @default(uuid())
+  orderId          String
+  addressLine1     String
+  addressLine2     String?
+  city             String
+  state            String
+  pincode          String
+  country          String
+
+  order            Order     @relation(fields: [orderId], references: [id], onDelete: Cascade)
 }
 
 model Cart {

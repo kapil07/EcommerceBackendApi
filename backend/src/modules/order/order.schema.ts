@@ -6,7 +6,8 @@ export const createOrderSchema = z.object({
             productId: z.string(),
             quantity: z.number().min(1,"At least one item should be there")
         })
-    )
+    ),
+    addressId: z.string()
 }).strict()
 
 export const updateOrderStatusSchema = z.object({

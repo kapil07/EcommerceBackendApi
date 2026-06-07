@@ -8,13 +8,23 @@ export class OrderService {
   constructor(private orderRepo: IOrderRepository) {}
 
   async createOrder(userId: string, data: createOrderDTO) {
-    const { items } = data;
+    const { items, addressId } = data;
 
     if (!items || items.length === 0) {
       throw new AppError("Order must contain at least one item", 400);
     }
 
     return await prisma.$transaction(async (tx) => {
+      const address = await tx.address.findUnique({
+        where: {
+          id: addressId,
+        },
+      });
+
+      if (!address || address.userId !== userId) {
+        throw new AppError("Invalid address", 400);
+      }
+
       let totalPrice = new Prisma.Decimal(0);
       let totalItems = 0;
 
@@ -79,7 +89,29 @@ export class OrderService {
         },
       });
 
-      return order;
+      await tx.orderAddress.create({
+        data: {
+          orderId: order.id,
+          addressLine1: address.addressLine1,
+          addressLine2: address.addressLine2,
+          city: address.city,
+          state: address.state,
+          pincode: address.pincode,
+          country: address.country,
+        },
+      });
+
+      const fullOrder = await tx.order.findUnique({
+        where:{
+          id: order.id
+        },
+        include:{
+          items: true,
+          orderAddress: true
+        }
+      })
+
+      return fullOrder;
     });
   }
 
@@ -92,10 +124,10 @@ export class OrderService {
   async updateOrderStatus(orderId: string, data: updateOrderStatusDTO) {
     const { status } = data;
 
-    const existingOrder = await this.orderRepo.getOrderById(orderId)
+    const existingOrder = await this.orderRepo.getOrderById(orderId);
 
-    if(!existingOrder){
-        throw new AppError("Order not found", 404)
+    if (!existingOrder) {
+      throw new AppError("Order not found", 404);
     }
 
     const updatedOrder = await this.orderRepo.updateOrderStatus(
@@ -106,50 +138,50 @@ export class OrderService {
     return updatedOrder;
   }
 
-  async cancelOrder(orderId: string, userId: string){
-    return await prisma.$transaction(async(tx) => {
-        const order = await tx.order.findUnique({
-            where:{
-                id: orderId
+  async cancelOrder(orderId: string, userId: string) {
+    return await prisma.$transaction(async (tx) => {
+      const order = await tx.order.findUnique({
+        where: {
+          id: orderId,
+        },
+        include: {
+          items: true,
+        },
+      });
+
+      if (!order) {
+        throw new AppError("Order not found", 404);
+      }
+
+      if (order.userId !== userId) {
+        throw new AppError("Unauthorized", 403);
+      }
+
+      if (order.status !== OrderStatus.PENDING) {
+        throw new AppError("Only pending order can be cancelled", 400);
+      }
+
+      for (const item of order.items) {
+        await tx.product.update({
+          where: {
+            id: item.productId,
+          },
+          data: {
+            stock: {
+              increment: item.quantity,
             },
-            include:{
-                items: true
-            }
-        })
+          },
+        });
+      }
 
-        if(!order){
-            throw new AppError("Order not found", 404)
-        }
-
-        if(order.userId !== userId){
-            throw new AppError("Unauthorized", 403)
-        }
-
-        if(order.status !== OrderStatus.PENDING){
-            throw new AppError("Only pending order can be cancelled", 400)
-        }
-
-        for(const item of order.items){
-            await tx.product.update({
-                where:{
-                    id: item.productId
-                },
-                data:{
-                    stock: {
-                        increment: item.quantity
-                    }
-                }
-            })
-        }
-
-        return await tx.order.update({
-            where: {
-                id: orderId
-            },
-            data:{
-                status: OrderStatus.CANCELLED
-            }
-        })
-    })
+      return await tx.order.update({
+        where: {
+          id: orderId,
+        },
+        data: {
+          status: OrderStatus.CANCELLED,
+        },
+      });
+    });
   }
 }
