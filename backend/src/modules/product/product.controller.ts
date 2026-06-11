@@ -33,6 +33,19 @@ export const getAllProductsController = catchAsync(
   },
 );
 
+export const getAllActiveProductsController = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const result = await productService.getAllActiveProducts(req.query);
+
+    sendResponse(res, 200, {
+      success: true,
+      message: "All Active Products fecthed successfully",
+      data: result,
+    });
+  },
+);
+
+
 export const getProductByCategoryIdController = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const categoryId = req.params.catId as string;

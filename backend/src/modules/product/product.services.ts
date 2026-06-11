@@ -8,6 +8,7 @@ import { IProductRespository } from "./product.interface.js";
 import { createProductDTO, updateProductDTO } from "./product.schema.js";
 import { toProductListResponse, toProductResponse } from "./product.mapper.js";
 import { updateCategoryDTO } from "../category/category.schema.js";
+import { ProductQueryOptions } from "../../types/index.js";
 
 export class ProductService {
   constructor(private productRepo: IProductRespository) {}
@@ -40,6 +41,12 @@ export class ProductService {
 
   async getAllProducts() {
     const products = await this.productRepo.getAllProducts();
+
+    return toProductListResponse(products);
+  }
+
+  async getAllActiveProducts(filters: ProductQueryOptions) {
+    const products = await this.productRepo.getAllActiveProducts(filters);
 
     return toProductListResponse(products);
   }
@@ -93,9 +100,13 @@ export class ProductService {
       );
     }
 
-    const updatedProduct = await this.productRepo.toogleProductStatus(productId,sellerId,!exisitingProduct.isActive)
+    const updatedProduct = await this.productRepo.toogleProductStatus(
+      productId,
+      sellerId,
+      !exisitingProduct.isActive,
+    );
 
-    return toProductResponse(updatedProduct)
+    return toProductResponse(updatedProduct);
   }
 
   async deleteProduct(productId: string, sellerId: string) {

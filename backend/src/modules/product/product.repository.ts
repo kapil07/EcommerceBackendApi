@@ -2,6 +2,7 @@ import { Prisma } from "@prisma/client";
 import { prisma } from "../../lib/prisma.js";
 import { IProductRespository } from "./product.interface.js";
 import { updateProductDTO } from "./product.schema.js";
+import { ProductQueryOptions } from "../../types/index.js";
 
 export class ProductRespository implements IProductRespository {
   async createProduct(data: {
@@ -23,6 +24,60 @@ export class ProductRespository implements IProductRespository {
   async getAllProducts() {
     const products = await prisma.product.findMany();
 
+    return products;
+  }
+
+  async getAllActiveProducts(filters: ProductQueryOptions) {
+    console.log(filters)
+    const { categoryId, minPrice, maxPrice, sortBy } = filters;
+    console.log(categoryId)
+
+    const where: Prisma.ProductWhereInput = {
+      isActive: true,
+    };
+
+    // filter by categoryId
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    // filter by price
+    if (minPrice || maxPrice) {
+      where.price = {};
+
+      if (minPrice) {
+        where.price.gte = new Prisma.Decimal(minPrice);
+      }
+
+      if (maxPrice) {
+        where.price.lte = new Prisma.Decimal(maxPrice);
+      }
+    }
+
+    // sorting
+    let orderBy: Prisma.ProductOrderByWithRelationInput = {
+      createdAt: "desc",
+    };
+
+    if (sortBy === "latest") {
+      orderBy = { createdAt: "desc" };
+    }
+    if (sortBy === "oldest") {
+      orderBy = { createdAt: "asc" };
+    }
+    if (sortBy === "priceAsc") {
+      orderBy = { price: "asc" };
+    }
+    if (sortBy === "priceDesc") { 
+      orderBy = { price: "desc" };
+    }
+
+    console.log(where)
+
+    const products = await prisma.product.findMany({
+      where,
+      orderBy
+    });
     return products;
   }
 
@@ -78,7 +133,7 @@ export class ProductRespository implements IProductRespository {
     sellerId: string,
     status: boolean,
   ) {
-   const product =  await prisma.product.update({
+    const product = await prisma.product.update({
       where: {
         id: productId,
         userId: sellerId,
@@ -86,7 +141,7 @@ export class ProductRespository implements IProductRespository {
       data: { isActive: status },
     });
 
-    return product
+    return product;
   }
 
   async deleteProduct(productId: string, sellerId: string) {

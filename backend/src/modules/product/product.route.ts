@@ -3,6 +3,7 @@ import { authorize, verifyUser } from "../../middlewares/auth.middleware.js";
 import {
   createProductController,
   deleteProductController,
+  getAllActiveProductsController,
   getAllProductsController,
   getProductByCategoryIdController,
   toggleProductStatusController,
@@ -24,6 +25,7 @@ router
     createProductController,
   );
 router.route("/").get(verifyUser, authorize("ADMIN"), getAllProductsController);
+router.route("/all-active-products").get(getAllActiveProductsController)
 router.route("/:catId").get(getProductByCategoryIdController);
 router
   .route("/:prodId")

@@ -22,8 +22,16 @@ export class OrderRepository implements IOrderRepository {
         userId,
       },
       include: {
-        items: true,
+        items: {
+          include: {
+            product: true
+          }
+        },
+        orderAddress: true
       },
+      orderBy:{
+        createdAt: "desc"
+      }
     });
     return orders;
   }
