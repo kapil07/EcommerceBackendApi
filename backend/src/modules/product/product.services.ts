@@ -9,6 +9,8 @@ import { createProductDTO, updateProductDTO } from "./product.schema.js";
 import { toProductListResponse, toProductResponse } from "./product.mapper.js";
 import { updateCategoryDTO } from "../category/category.schema.js";
 import { ProductQueryOptions } from "../../types/index.js";
+import redis from "../../lib/redis.js";
+import { invalidateProductCache } from "../../utils/cache.helper.js";
 
 export class ProductService {
   constructor(private productRepo: IProductRespository) {}
@@ -36,6 +38,8 @@ export class ProductService {
       stock: Number(data.stock),
     });
 
+    await invalidateProductCache()
+
     return toProductResponse(newproduct);
   }
 
@@ -46,13 +50,24 @@ export class ProductService {
   }
 
   async getAllActiveProducts(filters: ProductQueryOptions) {
+    const cacheKey = `products:${JSON.stringify(filters)}`;
+    const cachedProducts = await redis.get(cacheKey)
+    if(cachedProducts){
+      console.log("CACHE HIT")
+      return JSON.parse(cachedProducts)
+    }
+    console.log("CACHE MISS")
+
     const result = await this.productRepo.getAllActiveProducts(filters);
 
-    return {
+    const formattedResult = {
        ...result,
        products: toProductListResponse(result.products)
-
     }
+
+    await redis.set(cacheKey, JSON.stringify(formattedResult),"EX", 300);
+
+    return formattedResult
   }
 
   async getProductsByCategoryId(categoryId: string) {
@@ -88,6 +103,8 @@ export class ProductService {
       sellerId,
     );
 
+    await invalidateProductCache()
+
     return toProductResponse(updatedProduct);
   }
 
@@ -109,6 +126,8 @@ export class ProductService {
       sellerId,
       !exisitingProduct.isActive,
     );
+
+    await invalidateProductCache()
 
     return toProductResponse(updatedProduct);
   }
@@ -133,5 +152,7 @@ export class ProductService {
     });
 
     await this.productRepo.deleteProduct(productId, sellerId);
+
+    await invalidateProductCache()
   }
 }
