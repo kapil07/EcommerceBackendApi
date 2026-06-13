@@ -28,9 +28,14 @@ export class ProductRespository implements IProductRespository {
   }
 
   async getAllActiveProducts(filters: ProductQueryOptions) {
-    console.log(filters)
-    const { categoryId, minPrice, maxPrice, sortBy } = filters;
-    console.log(categoryId)
+    const {
+      categoryId,
+      minPrice,
+      maxPrice,
+      sortBy,
+      limit = 10,
+      cursor,
+    } = filters;
 
     const where: Prisma.ProductWhereInput = {
       isActive: true,
@@ -54,6 +59,13 @@ export class ProductRespository implements IProductRespository {
       }
     }
 
+    // cursor
+    if (cursor) {
+      where.createdAt = {
+        lt: new Date(cursor),
+      };
+    }
+
     // sorting
     let orderBy: Prisma.ProductOrderByWithRelationInput = {
       createdAt: "desc",
@@ -68,17 +80,26 @@ export class ProductRespository implements IProductRespository {
     if (sortBy === "priceAsc") {
       orderBy = { price: "asc" };
     }
-    if (sortBy === "priceDesc") { 
+    if (sortBy === "priceDesc") {
       orderBy = { price: "desc" };
     }
 
-    console.log(where)
-
     const products = await prisma.product.findMany({
       where,
-      orderBy
+      orderBy,
+      take: limit + 1,
     });
-    return products;
+    let nextCursor: string | null = null;
+    if (products.length > limit) {
+      const nextItem = products.pop();
+
+      nextCursor = nextItem?.createdAt.toISOString() || null;
+    }
+    return {
+      products,
+      nextCursor,
+      hasMore: !!nextCursor,
+    };
   }
 
   async getProductsByCategoryId(categoryId: string) {

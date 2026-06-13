@@ -46,9 +46,13 @@ export class ProductService {
   }
 
   async getAllActiveProducts(filters: ProductQueryOptions) {
-    const products = await this.productRepo.getAllActiveProducts(filters);
+    const result = await this.productRepo.getAllActiveProducts(filters);
 
-    return toProductListResponse(products);
+    return {
+       ...result,
+       products: toProductListResponse(result.products)
+
+    }
   }
 
   async getProductsByCategoryId(categoryId: string) {

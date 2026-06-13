@@ -35,7 +35,15 @@ export const getAllProductsController = catchAsync(
 
 export const getAllActiveProductsController = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const result = await productService.getAllActiveProducts(req.query);
+    const filters = {
+      categoryId: req.query.categoryId as string,
+      minPrice: req.query.minPrice as string,
+      maxPrice: req.query.maxPrice as string,
+      sortBy: req.query.sortBy as "latest" | "oldest" | "priceAsc" | "priceDesc",
+      limit: req.query.limit ? Number(req.query.limit) : 10,
+      cursor: req.query.cursor as string
+    }
+    const result = await productService.getAllActiveProducts(filters);
 
     sendResponse(res, 200, {
       success: true,
