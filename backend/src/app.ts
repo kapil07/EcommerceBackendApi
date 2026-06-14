@@ -3,9 +3,14 @@ import cors from "cors";
 import cookiesParser from "cookie-parser";
 import { Request } from "express";
 import { globalErrorHandler } from "./middlewares/error.middleware.js";
+import { globalLimiter } from "./middlewares/rateLimit.middleware.js";
 
 export const app = express();
 
+// only in production if used NGINX , AWS etc
+// app.set("trust proxy", 1)
+
+app.use(globalLimiter)
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -26,17 +31,18 @@ app.get("/health-check", (req: Request, res: Response, next: NextFunction) => {
 });
 
 import authRouter from "./modules/auth/auth.route.js";
-import categoryRouter from "./modules/category/category.route.js"
-import productRouter from "./modules/product/product.route.js"
-import orderRouter from "./modules/order/order.route.js"
-import addressRouter from "./modules/address/address.route.js"
-import cartRouter from "./modules/carts/cart.route.js"
+import categoryRouter from "./modules/category/category.route.js";
+import productRouter from "./modules/product/product.route.js";
+import orderRouter from "./modules/order/order.route.js";
+import addressRouter from "./modules/address/address.route.js";
+import cartRouter from "./modules/carts/cart.route.js";
+
 
 app.use("/api/v1/auth", authRouter);
-app.use("/api/v1/category",categoryRouter)
-app.use("/api/v1/product", productRouter)
-app.use("/api/v1/order", orderRouter)
-app.use("/api/v1/address", addressRouter)
-app.use("/api/v1/cart",cartRouter)
+app.use("/api/v1/category", categoryRouter);
+app.use("/api/v1/product", productRouter);
+app.use("/api/v1/order", orderRouter);
+app.use("/api/v1/address", addressRouter);
+app.use("/api/v1/cart", cartRouter);
 
 app.use(globalErrorHandler);

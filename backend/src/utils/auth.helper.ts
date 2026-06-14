@@ -2,6 +2,7 @@ import bcrypt from "bcrypt";
 import crypto from "crypto";
 import { Response } from "express";
 import { NODE_ENV } from "../config/env.config.js";
+import { prisma } from "../lib/prisma.js";
 
 export const hashPassword = async (password: string): Promise<string> => {
   return await bcrypt.hash(password, 10);
